@@ -1,0 +1,133 @@
+.prompt-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #fde8ee 0%, #f5e6f2 50%, #ece4f5 100%);
+    padding: 32px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+}
+
+.prompt-wrap {
+    width: 100%;
+    max-width: 760px;
+}
+
+.prompt-progress-row {
+    display: flex;
+    justify-content: space-between;
+    color: #6b6b75;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.prompt-progress-track {
+    width: 100%;
+    height: 6px;
+    background: #ede5ee;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.prompt-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff5fa2 0%, #b537d8 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.prompt-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 36px 36px 40px;
+    box-shadow: 0 4px 24px rgba(120, 80, 140, 0.08);
+}
+
+.prompt-pill {
+    display: inline-block;
+    background: #ececef;
+    color: #2a2a30;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+.prompt-scenario {
+    font-style: italic;
+    color: #6b6b75;
+    font-size: 18px;
+    line-height: 1.55;
+    margin: 0 0 22px;
+}
+
+.prompt-question {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 28px;
+}
+
+.prompt-options {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 32px;
+}
+
+.prompt-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    border: 1px solid #e6e1ea;
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    font-size: 16px;
+    color: #1a1a1f;
+    transition: border-color 0.15s ease, transform 0.1s ease, background 0.15s ease;
+    font-family: inherit;
+}
+
+.prompt-option:hover {
+    border-color: #b537d8;
+    background: #fdf6ff;
+}
+
+.prompt-option.selected {
+    border-color: #b537d8;
+    background: #fbeefb;
+}
+
+.prompt-option-letter {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid #b9b3bf;
+    color: #2a2a30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.prompt-option.selected .prompt-option-letter {
+    border-color: #b537d8;
+    background: #b537d8;
+    color: #fff;
+}
+
+.prompt-option-label {
+    font-weight: 600;
+}
+
+.prompt-loading,
+.prompt-error {
+    text-align: center;
+    color: #6b6b75;
+    padding: 48px 0;
+}

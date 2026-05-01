@@ -1,0 +1,74 @@
+.home-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #fde8ee 0%, #f5e6f2 50%, #ece4f5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.home-card {
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    padding: 48px 32px;
+}
+
+.home-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff5fa2 0%, #b537d8 100%);
+    margin: 0 auto 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(181, 55, 216, 0.25);
+}
+
+.home-icon-sparkle {
+    position: absolute;
+    top: -6px;
+    right: -2px;
+    font-size: 28px;
+}
+
+.home-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 20px;
+}
+
+.home-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #6b6b75;
+    margin: 0 0 36px;
+}
+
+.home-button {
+    background: #0d0d12;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 40px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.home-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.home-footnote {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #9a9aa3;
+}

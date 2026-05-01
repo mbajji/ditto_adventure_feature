@@ -1,56 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './results.css';
-
-function tallyTraits(answers) {
-    const totals = {};
-    (answers || []).forEach((a) => {
-        Object.entries(a.traits || {}).forEach(([t, v]) => {
-            totals[t] = (totals[t] || 0) + v;
-        });
-    });
-    return totals;
-}
-
-function deriveProfile(totals) {
-    const t = (k) => totals[k] || 0;
-
-    let attachment;
-    if (t('emp') >= 4 && t('soc') >= 2) attachment = 'Secure';
-    else if (t('cau') >= 4 && t('emp') >= 2) attachment = 'Anxious';
-    else if (t('sol') >= 4) attachment = 'Avoidant';
-    else attachment = 'Earned Secure';
-
-    let social;
-    if (t('soc') > t('sol') + 2) social = 'Extrovert';
-    else if (t('sol') > t('soc') + 2) social = 'Introvert';
-    else social = 'Ambivert';
-
-    let conflict;
-    const confrontScore = t('amb') + t('log');
-    const mediateScore = t('emp') + t('soc');
-    const avoidScore = t('cau') + t('sol');
-    const top = Math.max(confrontScore, mediateScore, avoidScore);
-    if (top === confrontScore) conflict = 'Confront';
-    else if (top === mediateScore) conflict = 'Mediate';
-    else conflict = 'Reflect';
-
-    const valueMap = {
-        adv: 'Adventure',
-        amb: 'Achievement',
-        emp: 'Connection',
-        cre: 'Creativity',
-        log: 'Knowledge',
-        cau: 'Stability',
-        soc: 'Belonging',
-        sol: 'Independence',
-    };
-    const topValue = Object.entries(totals)
-        .filter(([k]) => valueMap[k])
-        .sort((a, b) => b[1] - a[1])[0];
-    const coreValue = topValue ? valueMap[topValue[0]] : 'Adventure';
-
-    return { attachment, social, conflict, coreValue };
-}
 
 const ICONS = {
     heart: (
@@ -77,6 +27,12 @@ const ICONS = {
             <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
         </svg>
     ),
+    lock: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="11" width="16" height="10" rx="2"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+        </svg>
+    ),
 };
 
 function Results(){
@@ -84,18 +40,74 @@ function Results(){
     const location = useLocation();
     const answers = location.state?.answers;
 
+    const [profile, setProfile] = useState(null);
+    const [savedId, setSavedId] = useState(null);
+    const [encryptedPreview, setEncryptedPreview] = useState(null);
+    const [saving, setSaving] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (!answers) {
+            setSaving(false);
+            return;
+        }
+        fetch('/api/personality', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers }),
+        })
+            .then((r) => {
+                if (!r.ok) throw new Error('Save failed');
+                return r.json();
+            })
+            .then((data) => {
+                setProfile(data.profile);
+                setSavedId(data.id);
+                setEncryptedPreview(data.encrypted);
+                localStorage.setItem('ditto_personality_id', data.id);
+                setSaving(false);
+            })
+            .catch((e) => {
+                setError(e.message);
+                setSaving(false);
+            });
+    }, [answers]);
+
     if (!answers) {
         return (
             <div className="results-page">
                 <div className="results-wrap">
-                    <p className="results-empty">No quest results yet. <button className="results-btn-secondary" onClick={() => navigate('/')}>Start one</button></p>
+                    <p className="results-empty">
+                        No quest results yet.{' '}
+                        <button className="results-btn-secondary" onClick={() => navigate('/')}>Start one</button>
+                    </p>
                 </div>
             </div>
         );
     }
 
-    const totals = tallyTraits(answers);
-    const profile = deriveProfile(totals);
+    if (saving) {
+        return (
+            <div className="results-page">
+                <div className="results-wrap">
+                    <p className="results-empty">Encrypting your results...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !profile) {
+        return (
+            <div className="results-page">
+                <div className="results-wrap">
+                    <p className="results-empty">
+                        {error || 'Something went wrong.'}
+                        <br />Make sure the backend is running: <code>npm run server</code>
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     const cards = [
         { icon: ICONS.heart, label: 'Attachment Style', value: profile.attachment },
@@ -109,12 +121,20 @@ function Results(){
             <div className="results-wrap">
                 <div className="results-header">
                     <div className="results-icon">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="#fff">
+                        <svg width="40" height="40" viewBox="0 0 24 24">
                             <path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" fill="#fff"/>
                         </svg>
                     </div>
                     <h1 className="results-title">Quest Complete!</h1>
                     <p className="results-subtitle">Here's what your adventure revealed</p>
+                </div>
+
+                <div className="results-encrypted">
+                    <span className="results-encrypted-icon">{ICONS.lock}</span>
+                    <span>
+                        Saved with envelope encryption (AES-256-GCM + RSA-2048) ·{' '}
+                        <code>{savedId.slice(0, 8)}…</code>
+                    </span>
                 </div>
 
                 <div className="results-cards">
@@ -128,6 +148,13 @@ function Results(){
                         </div>
                     ))}
                 </div>
+
+                {encryptedPreview && (
+                    <details className="results-cipher">
+                        <summary>Show ciphertext (what the database actually stores)</summary>
+                        <pre>{JSON.stringify(encryptedPreview, null, 2)}</pre>
+                    </details>
+                )}
 
                 <div className="results-cta">
                     <h2 className="results-cta-title">Your Destiny Awaits</h2>

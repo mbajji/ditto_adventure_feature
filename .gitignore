@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# server-generated RSA key encryption key — never commit
+/server/keys

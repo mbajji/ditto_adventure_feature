@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const { randomUUID } = require('crypto');
 const questions = require('./questions');
+const { tallyTraits, deriveProfile } = require('./personality');
+const { encryptEnvelope, decryptEnvelope } = require('./crypto');
 
 const app = express();
 const PORT = 5000;
@@ -17,6 +20,8 @@ function shuffle(arr) {
     return a;
 }
 
+const personalityStore = new Map();
+
 app.get('/api/questions', (req, res) => {
     const count = Math.min(Number(req.query.count) || 10, questions.length);
     const picked = shuffle(questions).slice(0, count).map((q, i) => ({
@@ -32,16 +37,41 @@ app.get('/api/questions', (req, res) => {
     res.json({ questions: picked });
 });
 
-app.post('/api/match', (req, res) => {
+app.post('/api/personality', (req, res) => {
     const { answers } = req.body || {};
-    const totals = {};
-    (answers || []).forEach((a) => {
-        Object.entries(a.traits || {}).forEach(([t, v]) => {
-            totals[t] = (totals[t] || 0) + v;
-        });
+    if (!Array.isArray(answers) || answers.length === 0) {
+        return res.status(400).json({ error: 'answers array required' });
+    }
+    const totals = tallyTraits(answers);
+    const profile = deriveProfile(totals);
+    const payload = {
+        traits: totals,
+        profile,
+        savedAt: new Date().toISOString(),
+    };
+
+    const blob = encryptEnvelope(JSON.stringify(payload));
+    const id = randomUUID();
+    personalityStore.set(id, blob);
+
+    res.json({
+        id,
+        profile,
+        encrypted: blob,
     });
-    const top = Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([t]) => t);
-    res.json({ traits: totals, topTraits: top });
+});
+
+app.get('/api/personality/:id', (req, res) => {
+    const blob = personalityStore.get(req.params.id);
+    if (!blob) return res.status(404).json({ error: 'not found' });
+    const plaintext = decryptEnvelope(blob);
+    res.json({ id: req.params.id, ...JSON.parse(plaintext) });
+});
+
+app.get('/api/personality/:id/raw', (req, res) => {
+    const blob = personalityStore.get(req.params.id);
+    if (!blob) return res.status(404).json({ error: 'not found' });
+    res.json({ id: req.params.id, encrypted: blob });
 });
 
 app.listen(PORT, () => {
